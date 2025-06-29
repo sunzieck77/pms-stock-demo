@@ -11,7 +11,7 @@ async function fetchDataOnce() {
 
   let timeoutMessage = setTimeout(() => {
     loaderText.textContent = "อาจใช้เวลาซักครู่...";
-  }, 3000); // ถ้าโหลดเกิน 3 วิ
+  }, 3000);
 
   try {
     const res = await fetch(`https://script.google.com/macros/s/AKfycbyflZHP_1yQc7zbOhL29QYw9rwNyyEpmpTpR5xUjpmCdmR2okMUQv15edqNktdYalI/exec`);
@@ -21,7 +21,7 @@ async function fetchDataOnce() {
     clearTimeout(timeoutMessage);
 
     allData = json.data;
-    filteredData = [...allData]; // clone
+    filteredData = [...allData];
     loader.style.display = 'none';
     resContainer.style.display = 'block';
     renderList();
@@ -90,7 +90,7 @@ function renderPagination() {
   const pagination = document.getElementById('pagination');
   pagination.innerHTML = '';
 
-  if (totalPages <= 1) return; // ไม่มีหน้ามากพอให้แบ่ง
+  if (totalPages <= 1) return;
 
   const createBtn = (text, pageNum, active = false, disabled = false) => {
     const btn = document.createElement('button');
@@ -110,7 +110,6 @@ function renderPagination() {
     pagination.appendChild(btn);
   };
 
-  // ก่อนหน้า
   createBtn('ก่อนหน้า', currentPage - 1, false, currentPage === 1);
 
   const maxVisible = 5;
@@ -131,10 +130,8 @@ function renderPagination() {
     createBtn(totalPages, totalPages);
   }
 
-  // ถัดไป
   createBtn('ถัดไป', currentPage + 1, false, currentPage === totalPages);
 }
-
 
 document.getElementById('search').addEventListener('input', (e) => {
   const keyword = e.target.value.toLowerCase();
@@ -147,40 +144,71 @@ document.getElementById('search').addEventListener('input', (e) => {
   renderPagination();
 });
 
-
 fetchDataOnce();
 
-document.getElementById('scan-barcode').addEventListener('click', () => {
-  const scannerEl = document.getElementById("scanner");
+// Barcode scanner
+const scanBtn = document.getElementById('scan-barcode');
+const scannerEl = document.getElementById('scanner');
+const closeBtn = document.getElementById('close-scanner');
+const scannerControls = document.getElementById('scanner-controls');
+let html5QrCode;
+
+scanBtn.addEventListener('click', () => {
   scannerEl.style.display = "block";
+  scannerControls.style.display = "block";
 
-  const html5QrCode = new Html5Qrcode("scanner");
+  // ถ้ายังไม่มี instance, ให้สร้าง
+  if (!html5QrCode) {
+    html5QrCode = new Html5Qrcode("scanner", { verbose: false });
+  }
+
   Html5Qrcode.getCameras().then(devices => {
-    if (devices && devices.length) {
-      const cameraId = devices[0].id;
+    const backCamera = devices.find(device =>
+      device.label.toLowerCase().includes("back")
+    ) || devices[0];
 
+    // ป้องกัน start ซ้ำซ้อน
+    if (!html5QrCode._isScanning) {
       html5QrCode.start(
-        cameraId,
+        { deviceId: { exact: backCamera.id } },
         {
           fps: 10,
-          qrbox: 250
+          qrbox: 250,
+          disableFlip: true,
+          facingMode: "environment"
         },
         scannedText => {
           document.getElementById('search').value = scannedText;
-          html5QrCode.stop();
-          scannerEl.style.display = "none";
-
-          // ค้นหาอัตโนมัติ
+          html5QrCode.stop().then(() => {
+            scannerEl.style.display = "none";
+            scannerControls.style.display = "none";
+          });
           const event = new Event('input');
           document.getElementById('search').dispatchEvent(event);
         },
-        errorMessage => {
-          // ไม่ต้องแสดง error ใดๆ
+        error => {
+          // ignore scan errors
         }
       );
     }
   }).catch(err => {
-    alert("ไม่สามารถเข้ากล้องได้");
+    alert("ไม่สามารถเปิดกล้องได้");
     console.error(err);
   });
+});
+
+
+closeBtn.addEventListener('click', () => {
+  if (html5QrCode && html5QrCode._isScanning) {
+    html5QrCode.stop().then(() => {
+      scannerEl.style.display = "none";
+      scannerControls.style.display = "none";
+    }).catch(err => {
+      console.error("หยุดกล้องไม่สำเร็จ", err);
+    });
+  } else {
+    // fallback เผื่อผู้ใช้กดก่อนเริ่ม
+    scannerEl.style.display = "none";
+    scannerControls.style.display = "none";
+  }
 });
