@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>เพชรสมายด์ช็อป สต็อก</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="logo.ico" type="image/x-icon">
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+</head>
+<body>
+
+  <header>PMS สต็อก<p>เวอร์ชันทดสอบ</p></header>
+
+  <div class="search-bar">
+    <input type="text" id="search" placeholder="ค้นหาด้วยชื่อหรือรหัสสินค้า...">
+    <button id="scan-barcode">
+      <img src="https://static.thenounproject.com/png/74445-200.png" alt="Scan">
+      <span>สแกน</span>
+    </button>
+  </div>
+
+  <div id="scanner" style="display:none;"></div>
+
+  
+  <div id="loader">
+    <div class="spinner"></div>
+    <div id="loader-text">กำลังโหลดข้อมูล...</div>
+  </div>
+
+  <div id="error-message" style="display:none; text-align:center; margin-top: 40px;">
+  <div style="font-size: 48px; color: orange;">⚠️</div>
+    <div style="color: #ccc; font-size: 16px; margin-top: 8px;">
+    ไม่สามารถเชื่อมต่อฐานข้อมูลได้<br>
+    กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต หรือกลับมาลองใหม่อีกครั้ง
+    </div>
+  </div>
+
+  <div id="results" style="display:none;"></div>
+  <div id="pagination" style="text-align:center; margin: 20px;"></div>
+  <script src="script.js"></script>
+</body>
+</html>
