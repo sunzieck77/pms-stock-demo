@@ -3,6 +3,10 @@ let currentPage = 1;
 const limit = 15;
 let filteredData = [];
 
+const CACHE_KEY = "cachedPMSData";
+const CACHE_EXPIRY = 1000 * 60 * 5; // 5 นาที
+
+
 async function fetchDataOnce() {
   const loaderText = document.getElementById("loader-text");
   const loader = document.getElementById("loader");
@@ -13,6 +17,28 @@ async function fetchDataOnce() {
     loaderText.textContent = "อาจใช้เวลาซักครู่...";
   }, 3000);
 
+  // 🔹 ตรวจสอบว่ามี cache หรือไม่
+  const cached = localStorage.getItem(CACHE_KEY);
+  const cachedAt = localStorage.getItem(CACHE_KEY + "_at");
+
+  if (cached && cachedAt && (Date.now() - cachedAt < CACHE_EXPIRY)) {
+    try {
+      allData = JSON.parse(cached);
+      filteredData = [...allData];
+      clearTimeout(timeoutMessage);
+      loader.style.display = 'none';
+      resContainer.style.display = 'block';
+      renderList();
+      renderPagination();
+      console.log("โหลดจาก cache");
+      return;
+    } catch (e) {
+      console.warn("cache เสียหาย ลบ cache ทิ้ง");
+      localStorage.removeItem(CACHE_KEY);
+      localStorage.removeItem(CACHE_KEY + "_at");
+    }
+  }
+
   try {
     const res = await fetch(`https://script.google.com/macros/s/AKfycbyflZHP_1yQc7zbOhL29QYw9rwNyyEpmpTpR5xUjpmCdmR2okMUQv15edqNktdYalI/exec`);
     if (!res.ok) throw new Error('HTTP Error');
@@ -22,6 +48,11 @@ async function fetchDataOnce() {
 
     allData = json.data;
     filteredData = [...allData];
+
+    // 🔹 บันทึก cache
+    localStorage.setItem(CACHE_KEY, JSON.stringify(allData));
+    localStorage.setItem(CACHE_KEY + "_at", Date.now());
+
     loader.style.display = 'none';
     resContainer.style.display = 'block';
     renderList();
