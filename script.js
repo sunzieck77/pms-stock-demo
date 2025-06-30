@@ -202,6 +202,7 @@ scanBtn.addEventListener('click', () => {
   }
 
   Html5Qrcode.getCameras().then(devices => {
+    cameras = devices;
     const backCamera = devices.find(device => device.label.toLowerCase().includes("back"));
     const defaultCamera = backCamera || devices[0];
     isBackCamera = !!backCamera;
@@ -227,7 +228,6 @@ scanBtn.addEventListener('click', () => {
         },
         error => {}
       ).then(() => {
-        updateFlashButton(); // อัปเดตปุ่มแฟลชทันที
       });
     }
   }).catch(err => {
@@ -236,34 +236,8 @@ scanBtn.addEventListener('click', () => {
   });
 });
 
-toggleFlashBtn.addEventListener('click', async () => {
-  if (!html5QrCode || !isBackCamera) return;
-
-  try {
-    isFlashOn = !isFlashOn;
-    await html5QrCode.applyVideoConstraints({ advanced: [{ torch: isFlashOn }] });
-    updateFlashButton();
-  } catch (err) {
-    console.warn("แฟลชไม่รองรับ:", err);
-  }
-});
 
 
-function updateFlashButton() {
-  if (!isBackCamera) {
-    toggleFlashBtn.innerHTML = '<i class="bi bi-lightbulb-off"></i> ปิดแฟลช';
-    toggleFlashBtn.disabled = true;
-    toggleFlashBtn.style.opacity = 0.5;
-    toggleFlashBtn.style.cursor = 'not-allowed';
-  } else {
-    toggleFlashBtn.disabled = false;
-    toggleFlashBtn.style.opacity = 1;
-    toggleFlashBtn.style.cursor = 'pointer';
-    toggleFlashBtn.innerHTML = isFlashOn
-      ? '<i class="bi bi-lightbulb-off"></i> ปิดแฟลช'
-      : '<i class="bi bi-lightbulb"></i> เปิดแฟลช';
-  }
-}
 
 function startScanner(deviceId) {
   if (html5QrCode._isScanning) {
@@ -302,9 +276,17 @@ function startScanner(deviceId) {
 switchCameraBtn.addEventListener('click', () => {
   if (cameras.length > 1) {
     currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
-    startScanner(cameras[currentCameraIndex].id);
+
+    if (html5QrCode._isScanning) {
+      html5QrCode.stop().then(() => {
+        startScanner(cameras[currentCameraIndex].id);
+      });
+    } else {
+      startScanner(cameras[currentCameraIndex].id);
+    }
   }
 });
+
 
 // ปุ่มปิดกล้อง
 closeBtn.addEventListener('click', () => {
