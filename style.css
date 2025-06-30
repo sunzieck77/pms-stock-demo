@@ -1,5 +1,8 @@
-
-    body {
+/* ป้องกันการล้นขอบจาก padding + width */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+     body {
       background-color: #121212;
       color: #fff;
       font-family: 'Segoe UI', sans-serif;
@@ -26,7 +29,7 @@
       box-shadow: 0 1px 4px rgba(0,0,0,0.3);
       position: relative;
       top: 0;
-      z-index: 999;
+      z-index: 99;
       padding-top: 20px;
     }
     header p {
@@ -47,6 +50,7 @@
       border: none;
       background-color: #2a2a2a;
       color: white;
+      outline: none;
       box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
     }
     .search-bar {
@@ -59,6 +63,47 @@
       margin: 20px auto 8px auto;
       flex-wrap: wrap;
     }
+
+    @media (max-width: 500px) {
+      .search-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .search-bar input,
+      .search-bar button {
+        width: 100%;
+      }
+    }
+
+    .search-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+
+
+
+@media (max-width: 500px) {
+  .search-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-bar input {
+    width: 100%;
+  }
+
+  .search-buttons {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  #scan-barcode
+  {
+    flex: 1;
+  }
+}
 
     #scan-barcode {
       display: flex;
@@ -188,7 +233,7 @@
       cursor: not-allowed;
     }
 
-    /* Loader Spinner */
+    /* Loader Spinner
     #loader {
       text-align: center;
       margin-top: 60px;
@@ -202,10 +247,12 @@
       border-radius: 50%;
       margin: 0 auto;
       animation: spin 1s linear infinite;
-    }
+    } */
 
     #loader-text {
       margin-top: 12px;
+      margin-bottom: 12px;
+      font-weight: 600;
       color: #ccc;
       font-size: 16px;
     }
@@ -217,3 +264,41 @@
       font-family: 'Segoe UI', sans-serif;
       line-height: 1.6;
     }
+
+    .page-load {
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 999;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.712);
+    }
+
+    /* HTML: <div class="loader"></div> */
+    #loader {
+      --c:no-repeat linear-gradient(orange 0 0);
+      background: 
+        var(--c),var(--c),var(--c),
+        var(--c),var(--c),var(--c),
+        var(--c),var(--c),var(--c);
+      background-size: 16px 16px;
+      animation: 
+        l32-1 1s infinite,
+        l32-2 1s infinite;
+    }
+    @keyframes l32-1 {
+      0%,100% {width:45px;height: 45px}
+      35%,65% {width:65px;height: 65px}
+    }
+    @keyframes l32-2 {
+      0%,40%  {background-position: 0 0,0 50%, 0 100%,50% 100%,100% 100%,100% 50%,100% 0,50% 0,  50% 50% }
+      60%,100%{background-position: 0 50%, 0 100%,50% 100%,100% 100%,100% 50%,100% 0,50% 0,0 0,  50% 50% }
+    }
+
+
+
+
+

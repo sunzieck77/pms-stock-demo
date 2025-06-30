@@ -4,17 +4,17 @@ const limit = 15;
 let filteredData = [];
 
 const CACHE_KEY = "cachedPMSData";
-const CACHE_EXPIRY = 1000 * 60 * 5; // 5 นาที
+const CACHE_EXPIRY = 1000 * 60 * 1; // 1 นาที
 
 
 async function fetchDataOnce() {
   const loaderText = document.getElementById("loader-text");
-  const loader = document.getElementById("loader");
+  const loader = document.getElementById("pageLoad");
   const resContainer = document.getElementById("results");
   const errorBox = document.getElementById("error-message");
 
   let timeoutMessage = setTimeout(() => {
-    loaderText.textContent = "อาจใช้เวลาซักครู่...";
+    loaderText.textContent = "อาจจะช้านิดนึง..นะจ๊าาาา";
   }, 3000);
 
   // 🔹 ตรวจสอบว่ามี cache หรือไม่
@@ -64,6 +64,7 @@ async function fetchDataOnce() {
     console.error("โหลดข้อมูลล้มเหลว:", err);
   }
 }
+
 
 function renderList() {
   const results = document.getElementById('results');
@@ -243,3 +244,4 @@ closeBtn.addEventListener('click', () => {
     scannerControls.style.display = "none";
   }
 });
+
