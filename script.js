@@ -183,26 +183,32 @@ const scanBtn = document.getElementById('scan-barcode');
 const scannerEl = document.getElementById('scanner');
 const closeBtn = document.getElementById('close-scanner');
 const scannerControls = document.getElementById('scanner-controls');
+const extraControls = document.getElementById('extra-controls');
+const switchCameraBtn = document.getElementById('switch-camera');
+const toggleFlashBtn = document.getElementById('toggle-flash');
+
 let html5QrCode;
+let cameras = [];
+let currentCameraIndex = 0;
+let isBackCamera = true; // สมมุติเริ่มที่กล้องหลัง
 
 scanBtn.addEventListener('click', () => {
   scannerEl.style.display = "block";
   scannerControls.style.display = "block";
+  document.getElementById('extra-controls').style.display = "flex";
 
-  // ถ้ายังไม่มี instance, ให้สร้าง
   if (!html5QrCode) {
     html5QrCode = new Html5Qrcode("scanner", { verbose: false });
   }
 
   Html5Qrcode.getCameras().then(devices => {
-    const backCamera = devices.find(device =>
-      device.label.toLowerCase().includes("back")
-    ) || devices[0];
+    const backCamera = devices.find(device => device.label.toLowerCase().includes("back"));
+    const defaultCamera = backCamera || devices[0];
+    isBackCamera = !!backCamera;
 
-    // ป้องกัน start ซ้ำซ้อน
     if (!html5QrCode._isScanning) {
       html5QrCode.start(
-        { deviceId: { exact: backCamera.id } },
+        { deviceId: { exact: defaultCamera.id } },
         {
           fps: 10,
           qrbox: 250,
@@ -214,14 +220,15 @@ scanBtn.addEventListener('click', () => {
           html5QrCode.stop().then(() => {
             scannerEl.style.display = "none";
             scannerControls.style.display = "none";
+            document.getElementById('extra-controls').style.display = "none";
           });
           const event = new Event('input');
           document.getElementById('search').dispatchEvent(event);
         },
-        error => {
-          // ignore scan errors
-        }
-      );
+        error => {}
+      ).then(() => {
+        updateFlashButton(); // อัปเดตปุ่มแฟลชทันที
+      });
     }
   }).catch(err => {
     alert("ไม่สามารถเปิดกล้องได้");
@@ -229,19 +236,92 @@ scanBtn.addEventListener('click', () => {
   });
 });
 
+toggleFlashBtn.addEventListener('click', async () => {
+  if (!html5QrCode || !isBackCamera) return;
 
+  try {
+    isFlashOn = !isFlashOn;
+    await html5QrCode.applyVideoConstraints({ advanced: [{ torch: isFlashOn }] });
+    updateFlashButton();
+  } catch (err) {
+    console.warn("แฟลชไม่รองรับ:", err);
+  }
+});
+
+
+function updateFlashButton() {
+  if (!isBackCamera) {
+    toggleFlashBtn.innerHTML = '<i class="bi bi-lightbulb-off"></i> ปิดแฟลช';
+    toggleFlashBtn.disabled = true;
+    toggleFlashBtn.style.opacity = 0.5;
+    toggleFlashBtn.style.cursor = 'not-allowed';
+  } else {
+    toggleFlashBtn.disabled = false;
+    toggleFlashBtn.style.opacity = 1;
+    toggleFlashBtn.style.cursor = 'pointer';
+    toggleFlashBtn.innerHTML = isFlashOn
+      ? '<i class="bi bi-lightbulb-off"></i> ปิดแฟลช'
+      : '<i class="bi bi-lightbulb"></i> เปิดแฟลช';
+  }
+}
+
+function startScanner(deviceId) {
+  if (html5QrCode._isScanning) {
+    html5QrCode.stop().then(() => startScanner(deviceId));
+    return;
+  }
+
+  html5QrCode.start(
+    { deviceId: { exact: deviceId } },
+    {
+      fps: 10,
+      qrbox: 250,
+      disableFlip: true,
+      focusMode: "manual", // ✅ ปิด Auto-focus
+      advanced: [{
+        torch: isFlashOn // ✅ เปิดแฟลชถ้าเปิดไว้
+      }]
+    },
+    scannedText => {
+      document.getElementById('search').value = scannedText;
+      html5QrCode.stop().then(() => {
+        scannerEl.style.display = "none";
+        scannerControls.style.display = "none";
+        extraControls.style.display = "none";
+      });
+      const event = new Event('input');
+      document.getElementById('search').dispatchEvent(event);
+    },
+    error => {
+      // ignore
+    }
+  );
+}
+
+// ปุ่มสลับกล้อง
+switchCameraBtn.addEventListener('click', () => {
+  if (cameras.length > 1) {
+    currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
+    startScanner(cameras[currentCameraIndex].id);
+  }
+});
+
+// ปุ่มปิดกล้อง
 closeBtn.addEventListener('click', () => {
   if (html5QrCode && html5QrCode._isScanning) {
     html5QrCode.stop().then(() => {
+      document.getElementById('extra-controls').style.display = "none";
       scannerEl.style.display = "none";
       scannerControls.style.display = "none";
+      extraControls.style.display = "none";
     }).catch(err => {
       console.error("หยุดกล้องไม่สำเร็จ", err);
     });
   } else {
-    // fallback เผื่อผู้ใช้กดก่อนเริ่ม
     scannerEl.style.display = "none";
     scannerControls.style.display = "none";
+    extraControls.style.display = "none";
   }
 });
+
 

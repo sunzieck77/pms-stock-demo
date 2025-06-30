@@ -35,9 +35,20 @@
 
   <div id="scanner" style="display:none;"></div>
   <div id="scanner-controls" style="display:none; text-align:center; margin-top: 10px;">
-    <button id="close-scanner" class="btn-close-scanner">ปิด</button>
+   
+    <div id="extra-controls" class="scanner-extra-controls" style="display:none;">
+      <button id="switch-camera" class="scanner-btn">
+        <i class="bi bi-arrow-repeat"></i> สลับกล้อง
+      </button>
+      <button id="toggle-flash" class="scanner-btn">
+        <i class="bi bi-lightbulb"></i> เปิดแฟลช
+      </button>
+    </div>
+    
+    <button style="margin-top:12px;" id="close-scanner" class="btn-close-scanner">ปิด</button>
   </div>
 
+  
   <div id="error-message" style="display:none; text-align:center; margin-top: 40px;">
     <div style="font-size: 48px; color: orange;">⚠️</div>
     <div style="color: #ccc; font-size: 16px; margin-top: 8px;">
