@@ -228,14 +228,14 @@ header p {
 }
 
 .product-size {
-  font-size: 18px;
-  color: #ffffff;
+  font-size: 14px;
+  color: #bbbbbb;
   margin-bottom: 2px;
 }
 
 .product-price {
-  font-size: 14px;
-  color: #bbbbbb;
+  font-size: 18px;
+  color: #ffffff;
 }
 
 @media (max-width: 600px) {

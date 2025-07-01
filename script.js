@@ -92,8 +92,8 @@ function renderList() {
       div.className = 'product-item';
       div.innerHTML = `
         <div class="product-id">รหัสสินค้า: ${item['รหัสสินค้า']}</div>
-        <div class="product-size">ขนาดบรรจุ: ${item['จำนวนต่อหน่วย']} : 1 ${item['หน่วย']}</div>
         <div class="product-price">${item['หน่วย']}ละ ${item['ราคา']} บาท</div>
+         <div class="product-size">ขนาดบรรจุ: ${item['จำนวนต่อหน่วย']} : 1 ${item['หน่วย']}</div>
       `;
       groupDiv.appendChild(div);
     });
@@ -197,9 +197,10 @@ scanBtn.addEventListener('click', () => {
   scannerControls.style.display = "block";
   document.getElementById('extra-controls').style.display = "flex";
 
-  if (!html5QrCode) {
+  // if(html5QrCode) {
     html5QrCode = new Html5Qrcode("scanner", { verbose: false });
-  }
+  // }
+  
 
   Html5Qrcode.getCameras().then(devices => {
     cameras = devices;
@@ -207,12 +208,12 @@ scanBtn.addEventListener('click', () => {
     const defaultCamera = backCamera || devices[0];
     isBackCamera = !!backCamera;
 
-    if (!html5QrCode._isScanning) {
+    if (!html5QrCode.isScanning) {
       html5QrCode.start(
         { deviceId: { exact: defaultCamera.id } },
         {
           fps: 10,
-          qrbox: 250,
+          qrbox: 300,
           disableFlip: true,
           facingMode: "environment"
         },
@@ -240,7 +241,7 @@ scanBtn.addEventListener('click', () => {
 
 
 function startScanner(deviceId) {
-  if (html5QrCode._isScanning) {
+  if (html5QrCode.isScanning) {
     html5QrCode.stop().then(() => startScanner(deviceId));
     return;
   }
@@ -272,30 +273,18 @@ function startScanner(deviceId) {
   );
 }
 
-// ปุ่มสลับกล้อง
-switchCameraBtn.addEventListener('click', () => {
-  if (cameras.length > 1) {
-    currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
-
-    if (html5QrCode._isScanning) {
-      html5QrCode.stop().then(() => {
-        startScanner(cameras[currentCameraIndex].id);
-      });
-    } else {
-      startScanner(cameras[currentCameraIndex].id);
-    }
-  }
-});
-
-
 // ปุ่มปิดกล้อง
 closeBtn.addEventListener('click', () => {
-  if (html5QrCode && html5QrCode._isScanning) {
+  if (html5QrCode && html5QrCode.isScanning) {
     html5QrCode.stop().then(() => {
+      console.log("Stopped")
+      html5QrCode.clear();
+      html5QrCode = null;
       document.getElementById('extra-controls').style.display = "none";
       scannerEl.style.display = "none";
       scannerControls.style.display = "none";
       extraControls.style.display = "none";
+      
     }).catch(err => {
       console.error("หยุดกล้องไม่สำเร็จ", err);
     });
@@ -303,6 +292,7 @@ closeBtn.addEventListener('click', () => {
     scannerEl.style.display = "none";
     scannerControls.style.display = "none";
     extraControls.style.display = "none";
+   
   }
 });
 
